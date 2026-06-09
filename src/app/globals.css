@@ -3,33 +3,106 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+    color-scheme: dark;
 }
 
 html {
-  scroll-behavior: smooth;
+    scroll-behavior: smooth;
 }
 
 body {
-  margin: 0;
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at top, rgba(163, 255, 0, 0.08), transparent 20%),
-    radial-gradient(circle at bottom right, rgba(24, 227, 255, 0.08), transparent 24%),
-    #050505;
-  color: white;
-  font-family: var(--font-body), system-ui, sans-serif;
+    margin: 0;
+    min-height: 100vh;
+    background:
+        radial-gradient(
+            circle at top,
+            rgba(163, 255, 0, 0.08),
+            transparent 20%
+        ),
+        radial-gradient(
+            circle at bottom right,
+            rgba(24, 227, 255, 0.08),
+            transparent 24%
+        ),
+        #050505;
+    color: white;
+    font-family: var(--font-body), system-ui, sans-serif;
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 ::selection {
-  background: rgba(163, 255, 0, 0.35);
-  color: white;
+    background: rgba(163, 255, 0, 0.35);
+    color: white;
 }
 
 .font-display {
-  letter-spacing: 0.14em;
+    letter-spacing: 0.14em;
+}
+
+/* ── Scroll-reveal ── */
+[data-reveal] {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+        opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+[data-reveal="left"] {
+    transform: translateX(-26px);
+}
+[data-reveal="right"] {
+    transform: translateX(26px);
+}
+[data-reveal="scale"] {
+    transform: scale(0.93);
+}
+[data-reveal].is-visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* ── Hero entrance animations ── */
+@keyframes heroFadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(22px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+.hero-text {
+    animation: heroFadeUp 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.hero-d1 {
+    animation-delay: 0.05s;
+}
+.hero-d2 {
+    animation-delay: 0.18s;
+}
+.hero-d3 {
+    animation-delay: 0.3s;
+}
+.hero-d4 {
+    animation-delay: 0.44s;
+}
+.hero-d5 {
+    animation-delay: 0.56s;
+}
+
+/* ── Shine sweep on hover (cut cards) ── */
+@keyframes shineSweep {
+    from {
+        transform: translateX(-100%) skewX(-12deg);
+    }
+    to {
+        transform: translateX(250%) skewX(-12deg);
+    }
+}
+.group:hover .shine-sweep {
+    animation: shineSweep 0.6s ease forwards;
 }
