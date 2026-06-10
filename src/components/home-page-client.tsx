@@ -177,8 +177,7 @@ export default function HomePageClient() {
               </h1>
               <p className="hero-text hero-d3 mt-6 max-w-xl text-base leading-7 text-white/75 md:text-lg">
                 Corte de alto nivel, energía callejera y una experiencia premium
-                con estética graffiti/grunge diseñada para destacar en cada
-                detalle.
+                con estética, diseñada para destacar en cada detalle.
               </p>
               <div className="hero-text hero-d4 mt-8 flex flex-wrap items-center gap-4">
                 <Button onClick={() => setBookingOpen(true)}>
@@ -236,7 +235,7 @@ export default function HomePageClient() {
                     </div>
                   </div>
                   <div className="flex items-center justify-between text-sm text-white/70">
-                    <span>Bitácora neón</span>
+                    <span>Excelencia en todos los cortes</span>
                     <span className="inline-flex items-center gap-2 text-neon">
                       <Heart size={14} /> 4.8/5
                     </span>

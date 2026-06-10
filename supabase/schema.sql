@@ -1,25 +1,37 @@
-create extension if not exists "pgcrypto";
+-- ============================================================
+--  Barber Gang MX · Supabase Schema
+--  Paste this entire file into:
+--  Supabase Dashboard → SQL Editor → New Query → Run
+-- ============================================================
 
-create table if not exists services (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  duration_minutes integer not null
-);
-
-create table if not exists barbers (
-  id uuid primary key default gen_random_uuid(),
-  name text not null,
-  status text not null default 'activo'
-);
-
+-- ── appointments ────────────────────────────────────────────
 create table if not exists appointments (
-  id uuid primary key default gen_random_uuid(),
-  client_name text not null,
-  client_phone text not null,
-  service_id uuid references services(id),
-  barber_id uuid references barbers(id),
-  appointment_date timestamp not null,
-  created_at timestamp not null default now()
+  id               uuid        primary key default gen_random_uuid(),
+  created_at       timestamptz not null    default now(),
+  client_name      text        not null,
+  client_phone     text        not null,
+  appointment_date timestamptz not null,
+  service_id       text,          -- stores the service name (e.g. "Corte y Diseño de Cabello")
+  barber_id        text,          -- stores the barber name  (e.g. "Mauricio")
+  status           text        not null    default 'pending'
+                               check (status in ('pending', 'confirmed', 'cancelled', 'completed', 'no_show'))
 );
 
+-- ── Row Level Security ───────────────────────────────────────
 alter table appointments enable row level security;
+
+-- Anyone can book (insert) — the public booking form
+create policy "public_insert" on appointments
+  for insert to anon with check (true);
+
+-- Anyone can read — needed for /agenda and the realtime feed
+create policy "public_select" on appointments
+  for select to anon using (true);
+
+-- Anyone can update status — needed for confirm/cancel in /agenda
+create policy "public_update" on appointments
+  for update to anon using (true);
+
+-- ── Realtime ─────────────────────────────────────────────────
+-- Enables the live feed on /agenda (the "ding" when a new booking arrives)
+alter publication supabase_realtime add table appointments;
