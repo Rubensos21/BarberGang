@@ -11,7 +11,7 @@ import {
   MessageCircle,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type BookingState = {
   service: string;
@@ -20,6 +20,13 @@ type BookingState = {
   time: string;
   client_name: string;
   client_phone: string;
+};
+
+type Appointment = {
+  id: string;
+  barber_id: string | null;
+  appointment_date: string;
+  status: string;
 };
 
 const initialState: BookingState = {
@@ -31,7 +38,7 @@ const initialState: BookingState = {
   client_phone: "",
 };
 
-function buildTimeSlots(date: string) {
+function buildTimeSlots(date: string, existingAppointments: Appointment[], selectedBarber: string) {
   if (!date) return [] as string[];
   const selected = new Date(`${date}T00:00:00`);
   if (selected.getDay() === 0) return [] as string[];
@@ -44,14 +51,35 @@ function buildTimeSlots(date: string) {
 
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
-  if (date !== today) return slots;
+  let availableSlots = slots;
+  if (date === today) {
+    availableSlots = slots.filter((slot) => {
+      const [hour, minute] = slot.split(":").map(Number);
+      const slotDate = new Date();
+      slotDate.setHours(hour, minute, 0, 0);
+      return slotDate.getTime() > now.getTime();
+    });
+  }
 
-  return slots.filter((slot) => {
-    const [hour, minute] = slot.split(":").map(Number);
-    const slotDate = new Date();
-    slotDate.setHours(hour, minute, 0, 0);
-    return slotDate.getTime() > now.getTime();
-  });
+  // Filter out slots already taken by the selected barber (excluding cancelled ones)
+  if (selectedBarber) {
+    const takenSlots = existingAppointments
+      .filter(apt => apt.barber_id === selectedBarber && apt.status !== "cancelled")
+      .map(apt => {
+        const aptDate = new Date(apt.appointment_date);
+        // Convert to same date string as form.date to compare only the time
+        const aptDateStr = aptDate.toISOString().slice(0, 10);
+        if (aptDateStr === date) {
+          return aptDate.toTimeString().slice(0, 5);
+        }
+        return null;
+      })
+      .filter(Boolean) as string[];
+
+    availableSlots = availableSlots.filter(slot => !takenSlots.includes(slot));
+  }
+
+  return availableSlots;
 }
 
 export function BookingModal({
@@ -67,8 +95,24 @@ export function BookingModal({
   const [form, setForm] = useState<BookingState>(initialState);
   const [succeeded, setSucceeded] = useState(false);
   const [savedForm, setSavedForm] = useState<BookingState>(initialState);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  const timeSlots = useMemo(() => buildTimeSlots(form.date), [form.date]);
+  // Fetch existing appointments
+  useEffect(() => {
+    if (!supabase || !open) return;
+
+    const fetchAppointments = async () => {
+        if (!supabase) return;
+        const { data } = await supabase
+          .from("appointments")
+          .select("id, barber_id, appointment_date, status");
+        if (data) setAppointments(data as Appointment[]);
+      };
+
+    fetchAppointments();
+  }, [open]);
+
+  const timeSlots = useMemo(() => buildTimeSlots(form.date, appointments, form.barber), [form.date, appointments, form.barber]);
 
   if (!open) return null;
 
@@ -87,8 +131,14 @@ export function BookingModal({
   async function submitBooking() {
     if (!supabase) {
       setStatus(
-        "⚠️ Supabase no está configurado. Contacta al negocio para agendar tu cita: 782 172 4914",
+        "Por el momento no podemos agendar tu cita. Contacta al negocio para agendar tu cita: 782 172 4914",
       );
+      return;
+    }
+
+    // Validate name and phone
+    if (!form.client_name.trim() || !form.client_phone.trim()) {
+      setStatus("Por favor completa tu nombre y número de teléfono.");
       return;
     }
 
@@ -101,9 +151,30 @@ export function BookingModal({
     const appointmentDate = new Date(`${form.date}T${form.time}:00`);
 
     try {
+      // First check if the slot is still available
+      const { data: existingApts } = await supabase
+        .from("appointments")
+        .select("id, status")
+        .eq("barber_id", form.barber)
+        .eq("appointment_date", appointmentDate.toISOString());
+
+      const isSlotTaken = existingApts?.some(apt => apt.status !== "cancelled");
+      if (isSlotTaken) {
+        setSaving(false);
+        setStatus("Lo sentimos, este horario ya fue reservado. Por favor selecciona otro.");
+        // Refresh appointments
+        if (supabase) {
+          const { data: refreshData } = await supabase
+            .from("appointments")
+            .select("id, barber_id, appointment_date, status");
+          if (refreshData) setAppointments(refreshData as Appointment[]);
+        }
+        return;
+      }
+
       const { error } = await supabase.from("appointments").insert({
-        client_name: form.client_name,
-        client_phone: form.client_phone,
+        client_name: form.client_name.trim(),
+        client_phone: form.client_phone.trim(),
         service_id: selectedService?.name,
         barber_id: selectedBarber?.name,
         appointment_date: appointmentDate.toISOString(),
@@ -332,8 +403,7 @@ export function BookingModal({
                           ))
                         ) : (
                           <p className="text-sm text-white/50">
-                            Selecciona una fecha válida sin domingo o prueba un
-                            horario distinto.
+                            {!form.barber ? "Primero selecciona un barbero" : "No hay horarios disponibles para esta fecha. Por favor selecciona otra fecha o barbero."}
                           </p>
                         )}
                       </div>
@@ -348,6 +418,8 @@ export function BookingModal({
                         Nombre
                       </label>
                       <input
+                        type="text"
+                        required
                         value={form.client_name}
                         onChange={(event) =>
                           setForm((current) => ({
@@ -364,6 +436,8 @@ export function BookingModal({
                         Teléfono
                       </label>
                       <input
+                        type="tel"
+                        required
                         value={form.client_phone}
                         onChange={(event) =>
                           setForm((current) => ({
@@ -440,15 +514,6 @@ export function BookingModal({
                     <dd className="text-white">{form.time || "Pendiente"}</dd>
                   </div>
                 </dl>
-                <div className="mt-6 rounded-[1.2rem] border border-neon/30 bg-neon/10 p-4 text-white">
-                  <p className="font-bold uppercase tracking-[0.2em] text-neon">
-                    Supabase en tiempo real
-                  </p>
-                  <p className="mt-2 text-sm text-white/75">
-                    Las citas nuevas se enviarán a la tabla{" "}
-                    <span className="font-semibold">appointments</span>.
-                  </p>
-                </div>
               </aside>
             </div>
           </>

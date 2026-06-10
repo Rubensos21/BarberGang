@@ -17,6 +17,11 @@ create table if not exists appointments (
                                check (status in ('pending', 'confirmed', 'cancelled', 'completed', 'no_show'))
 );
 
+-- Prevent double bookings for the same barber at the same time
+create unique index if not exists unique_barber_time 
+  on appointments (barber_id, appointment_date) 
+  where status != 'cancelled';
+
 -- ── Row Level Security ───────────────────────────────────────
 alter table appointments enable row level security;
 

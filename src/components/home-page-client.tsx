@@ -130,6 +130,15 @@ const TICKER_ITEMS = [
   "MILITAR",
   "BARBA",
   "DISEÑO",
+  "CORTE Y DISEÑO",
+  "MASCARILLAS",
+  "LAVADO",
+  "EXFOLIACIÓN",
+  "TRATAMIENTOS CAPILARES",
+  "RITUAL DE BARBA",
+  "DISEÑO DE CEJA",
+  "PEINADO",
+  "TINTURA",
 ];
 
 function TickerStrip() {
@@ -482,7 +491,7 @@ export default function HomePageClient() {
                     {/* Info panel */}
                     <div className="relative flex flex-col justify-between bg-black p-8">
                       <div className="absolute right-6 top-6 h-36 w-36 animate-pulseGlow opacity-80">
-                        <CustomSmiley variant="smile" />
+                        
                       </div>
 
                       <div>

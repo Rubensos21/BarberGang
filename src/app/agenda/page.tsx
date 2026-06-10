@@ -290,11 +290,11 @@ function AppointmentCard({
     status === "completed" || status === "no_show" || status === "cancelled";
 
   const statusBadgeClass: Record<Status, string> = {
-    pending: "border-yellow-400/35 bg-yellow-400/10 text-yellow-300",
-    confirmed: "border-neon/35      bg-neon/10       text-neon",
-    cancelled: "border-red-500/35   bg-red-500/10    text-red-400",
-    completed: "border-neon/50      bg-neon/15       text-neon",
-    no_show: "border-orange-400/35 bg-orange-400/10 text-orange-400",
+    pending: "border-yellow-400/40 bg-yellow-400/15 text-yellow-300 shadow-sm",
+    confirmed: "border-neon/40      bg-neon/15       text-neon shadow-neon/20",
+    cancelled: "border-red-500/40   bg-red-500/15    text-red-400 shadow-sm",
+    completed: "border-green-400/40 bg-green-400/15 text-green-400 shadow-sm",
+    no_show: "border-orange-400/40 bg-orange-400/15 text-orange-400 shadow-sm",
   };
   const statusLabel: Record<Status, string> = {
     pending: "Pendiente",
@@ -313,38 +313,38 @@ function AppointmentCard({
   return (
     <div
       className={[
-        "rounded-[1.4rem] border bg-white/5 p-5 transition-all duration-300",
+        "rounded-[1.6rem] border bg-white/5 p-6 transition-all duration-300 shadow-lg",
         isNew
-          ? "border-neon/70 shadow-neon animate-borderPulse animate-[fadeInUp_0.5s_ease_both]"
-          : "border-white/10",
-        past ? "opacity-60" : "",
+          ? "border-neon/70 shadow-[0_0_30px_rgba(163,255,0,0.25)] animate-[fadeInUp_0.5s_ease_both]"
+          : "border-white/10 hover:border-white/20 hover:shadow-xl",
+        past ? "opacity-70" : "",
       ]
         .filter(Boolean)
         .join(" ")}
     >
       {/* Top row */}
-      <div className="flex flex-wrap items-start justify-between gap-2">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         {/* Name + new badge */}
         <div className="flex flex-wrap items-center gap-2">
           {isNew && (
-            <span className="flex items-center gap-1 rounded-full border border-neon/30 bg-neon/15 px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest text-neon">
-              <Bell className="h-3 w-3" />
-              Nueva
+            <span className="flex items-center gap-1.5 rounded-full border border-neon/40 bg-neon/20 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-neon shadow-neon/30">
+              <Bell className="h-3.5 w-3.5" />
+              Nueva Cita
             </span>
           )}
-          <p className="text-xl font-black uppercase tracking-[0.1em]">
+          <p className="text-2xl font-black uppercase tracking-[0.12em]">
             {apt.client_name}
           </p>
         </div>
 
         {/* Date + status badge */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] text-white/45">
+          <span className="text-[11px] font-medium text-white/50">
             {formatDateTime(apt.appointment_date)}
           </span>
           <span
             className={[
-              "rounded-full border px-2.5 py-0.5 text-[10px] font-black uppercase tracking-widest",
+              "rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-widest",
               statusBadgeClass[status],
             ].join(" ")}
           >
@@ -354,21 +354,21 @@ function AppointmentCard({
       </div>
 
       {/* Detail pills */}
-      <div className="mt-3 flex flex-wrap gap-2">
-        <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/55">
-          <Scissors className="h-3 w-3 shrink-0" />
-          {apt.service_id ?? "Servicio"}
+      <div className="mt-4 flex flex-wrap gap-2.5">
+        <span className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-4 py-2 text-xs font-medium text-white/60">
+          <Scissors className="h-4 w-4 shrink-0" />
+          {apt.service_id ?? "Servicio no especificado"}
         </span>
-        <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-black/40 px-3 py-1.5 text-xs text-white/55">
-          <User className="h-3 w-3 shrink-0" />
-          {apt.barber_id ?? "Barbero"}
+        <span className="flex items-center gap-1.5 rounded-full border border-white/15 bg-black/50 px-4 py-2 text-xs font-medium text-white/60">
+          <User className="h-4 w-4 shrink-0" />
+          {apt.barber_id ?? "Barbero no asignado"}
         </span>
         {apt.client_phone && (
           <a
             href={`tel:${apt.client_phone}`}
-            className="flex items-center gap-1.5 rounded-full border border-cyan/30 bg-cyan/10 px-3 py-1.5 text-xs text-cyan transition hover:bg-cyan/20 active:scale-95"
+            className="flex items-center gap-1.5 rounded-full border border-cyan/40 bg-cyan/15 px-4 py-2 text-xs font-medium text-cyan transition hover:bg-cyan/25 hover:border-cyan/60 active:scale-95"
           >
-            <Phone className="h-3 w-3 shrink-0" />
+            <Phone className="h-4 w-4 shrink-0" />
             {apt.client_phone}
           </a>
         )}
@@ -378,20 +378,20 @@ function AppointmentCard({
       {(status === "pending" || status === "confirmed") &&
         !rescheduling &&
         !confirmDelete && (
-          <div className="mt-4 space-y-3">
+          <div className="mt-5 space-y-4">
             {/* Row 1 — main controls */}
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {status === "pending" && (
                 <button
                   onClick={() => onSetStatus(apt.id, "confirmed")}
-                  className="flex min-h-[44px] items-center gap-1.5 rounded-full bg-neon px-4 py-2 text-xs font-black uppercase tracking-widest text-black transition hover:brightness-110 active:scale-95"
+                  className="flex min-h-[48px] items-center gap-2 rounded-full bg-neon px-5 py-3 text-xs font-black uppercase tracking-[0.22em] text-black transition hover:brightness-110 active:scale-95 shadow-neon/30"
                 >
-                  <Check className="h-3.5 w-3.5" /> Confirmar
+                  <Check className="h-4 w-4" /> Confirmar Cita
                 </button>
               )}
               {status === "confirmed" && (
-                <span className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-neon/40 bg-neon/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-neon">
-                  <Check className="h-3.5 w-3.5" /> Confirmada
+                <span className="flex min-h-[48px] items-center gap-2 rounded-full border border-neon/50 bg-neon/15 px-5 py-3 text-xs font-black uppercase tracking-[0.22em] text-neon shadow-neon/20">
+                  <Check className="h-4 w-4" /> Cita Confirmada
                 </span>
               )}
               <button
@@ -400,46 +400,46 @@ function AppointmentCard({
                   setNewTime("");
                   setRescheduling(true);
                 }}
-                className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-cyan/30 bg-cyan/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-cyan transition hover:bg-cyan/20 active:scale-95"
+                className="flex min-h-[48px] items-center gap-2 rounded-full border border-cyan/40 bg-cyan/15 px-5 py-3 text-xs font-black uppercase tracking-[0.22em] text-cyan transition hover:bg-cyan/25 active:scale-95"
               >
-                <CalendarClock className="h-3.5 w-3.5" /> Reagendar
+                <CalendarClock className="h-4 w-4" /> Reagendar
               </button>
               <button
                 onClick={() => onSetStatus(apt.id, "cancelled")}
-                className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-red-500/35 bg-red-500/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-red-400 transition hover:bg-red-500/20 active:scale-95"
+                className="flex min-h-[48px] items-center gap-2 rounded-full border border-red-500/40 bg-red-500/15 px-5 py-3 text-xs font-black uppercase tracking-[0.22em] text-red-400 transition hover:bg-red-500/25 active:scale-95"
               >
-                <X className="h-3.5 w-3.5" /> Cancelar
+                <X className="h-4 w-4" /> Cancelar
               </button>
               {apt.client_phone && (
                 <a
                   href={waUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-green-500/35 bg-green-500/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-green-400 transition hover:bg-green-500/20 active:scale-95"
+                  className="flex min-h-[48px] items-center gap-2 rounded-full border border-green-500/40 bg-green-500/15 px-5 py-3 text-xs font-black uppercase tracking-[0.22em] text-green-400 transition hover:bg-green-500/25 active:scale-95"
                 >
-                  <MessageCircle className="h-3.5 w-3.5" /> WhatsApp
+                  <MessageCircle className="h-4 w-4" /> WhatsApp
                 </a>
               )}
             </div>
 
             {/* Row 2 — completion prompt (only when confirmed) */}
             {status === "confirmed" && (
-              <div className="rounded-[1.1rem] border border-white/8 bg-black/40 p-3">
-                <p className="mb-2.5 text-[10px] font-black uppercase tracking-[0.28em] text-white/35">
+              <div className="rounded-[1.3rem] border border-white/10 bg-gradient-to-br from-black/60 to-black/40 p-4 shadow-inner">
+                <p className="mb-3 text-[11px] font-black uppercase tracking-[0.3em] text-white/40">
                   ¿Cómo terminó la cita?
                 </p>
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <button
                     onClick={() => onSetStatus(apt.id, "completed")}
-                    className="flex flex-1 min-h-[44px] items-center justify-center gap-2 rounded-full border border-neon/30 bg-neon/10 py-2.5 text-xs font-black uppercase tracking-[0.22em] text-neon transition hover:bg-neon hover:text-black active:scale-95"
+                    className="flex flex-1 min-h-[52px] items-center justify-center gap-2.5 rounded-full border border-green-400/40 bg-gradient-to-r from-green-400/20 to-green-500/20 py-3 text-xs font-black uppercase tracking-[0.24em] text-green-400 transition hover:from-green-400 hover:to-green-500 hover:text-black active:scale-95 shadow-lg hover:shadow-green-400/25"
                   >
-                    <CheckCheck className="h-3.5 w-3.5" /> Terminada
+                    <CheckCheck className="h-4.5 w-4.5" /> Terminada
                   </button>
                   <button
                     onClick={() => onSetStatus(apt.id, "no_show")}
-                    className="flex flex-1 min-h-[44px] items-center justify-center gap-2 rounded-full border border-orange-400/30 bg-orange-400/10 py-2.5 text-xs font-black uppercase tracking-[0.22em] text-orange-400 transition hover:bg-orange-400/20 active:scale-95"
+                    className="flex flex-1 min-h-[52px] items-center justify-center gap-2.5 rounded-full border border-orange-400/40 bg-gradient-to-r from-orange-400/20 to-orange-500/20 py-3 text-xs font-black uppercase tracking-[0.24em] text-orange-400 transition hover:from-orange-400 hover:to-orange-500 hover:text-black active:scale-95 shadow-lg hover:shadow-orange-400/25"
                   >
-                    <UserX className="h-3.5 w-3.5" /> No se presentó
+                    <UserX className="h-4.5 w-4.5" /> No se presentó
                   </button>
                 </div>
               </div>
@@ -451,71 +451,61 @@ function AppointmentCard({
       {(status === "completed" || status === "no_show") &&
         !rescheduling &&
         !confirmDelete && (
-          <div className="mt-3 flex gap-2 border-t border-white/8 pt-3">
-            <button
-              onClick={() => {
-                setNewDate("");
-                setNewTime("");
-                setRescheduling(true);
-              }}
-              className="flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-full border border-cyan/30 bg-cyan/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-cyan transition hover:bg-cyan/20 active:scale-95"
-            >
-              <CalendarClock className="h-3.5 w-3.5" /> Reagendar
-            </button>
+          <div className="mt-4 flex gap-2.5 border-t border-white/10 pt-4">
             <button
               onClick={() => setConfirmDelete(true)}
-              className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-red-500/25 bg-red-500/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-red-400 transition hover:bg-red-500/20 active:scale-95"
+              className="flex min-h-[48px] items-center gap-2 rounded-full border border-red-500/40 bg-red-500/15 px-5 py-3 text-xs font-black uppercase tracking-widest text-red-400 transition hover:bg-red-500/25 active:scale-95"
             >
-              <Trash2 className="h-3.5 w-3.5" /> Borrar
+              <Trash2 className="h-4 w-4" /> Borrar
             </button>
           </div>
         )}
 
       {/* ══ Cancelled — trash only ══ */}
       {status === "cancelled" && !rescheduling && !confirmDelete && (
-        <div className="mt-3 flex justify-end border-t border-white/8 pt-3">
+        <div className="mt-4 flex justify-end border-t border-white/10 pt-4">
           <button
             onClick={() => setConfirmDelete(true)}
-            className="flex min-h-[44px] items-center gap-1.5 rounded-full border border-red-500/25 bg-red-500/10 px-4 py-2 text-xs font-black uppercase tracking-widest text-red-400 transition hover:border-red-500/50 hover:bg-red-500/20 active:scale-95"
+            className="flex min-h-[48px] items-center gap-2 rounded-full border border-red-500/40 bg-red-500/15 px-5 py-3 text-xs font-black uppercase tracking-widest text-red-400 transition hover:border-red-500/60 hover:bg-red-500/25 active:scale-95"
           >
-            <Trash2 className="h-3.5 w-3.5" /> Borrar
+            <Trash2 className="h-4 w-4" /> Borrar Cita
           </button>
         </div>
       )}
 
       {/* ── Reschedule inline form ── */}
       {rescheduling && (
-        <div className="mt-3 space-y-3 rounded-[1.2rem] border border-cyan/25 bg-black/60 p-4">
-          <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-cyan">
-            <RotateCcw className="h-3 w-3" /> Nueva fecha y hora
+        <div className="mt-4 space-y-3.5 rounded-[1.4rem] border border-cyan/35 bg-gradient-to-br from-cyan/10 to-black/70 p-5 shadow-inner">
+          <p className="flex items-center gap-2.5 text-[11px] font-black uppercase tracking-[0.28em] text-cyan">
+            <RotateCcw className="h-4 w-4" /> Nueva Fecha y Hora
           </p>
           <input
             type="date"
             value={newDate}
             min={new Date().toISOString().slice(0, 10)}
             onChange={(e) => setNewDate(e.target.value)}
-            className="w-full rounded-[0.9rem] border border-white/10 bg-black/50 px-3 py-2.5 text-sm text-white outline-none focus:border-cyan"
+            className="w-full rounded-[1rem] border border-white/15 bg-black/60 px-4 py-3.5 text-sm text-white outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition-all"
           />
           <input
             type="time"
             value={newTime}
             onChange={(e) => setNewTime(e.target.value)}
-            className="w-full rounded-[0.9rem] border border-white/10 bg-black/50 px-3 py-2.5 text-sm text-white outline-none focus:border-cyan"
+            className="w-full rounded-[1rem] border border-white/15 bg-black/60 px-4 py-3.5 text-sm text-white outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition-all"
           />
-          <div className="flex gap-2">
+          <div className="flex gap-2.5 pt-1">
             <button
               disabled={!newDate || !newTime}
               onClick={() => {
                 onReschedule(apt.id, newDate, newTime);
                 setRescheduling(false);
               }}
-              className="flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-cyan py-2 text-xs font-black uppercase tracking-widest text-black transition disabled:opacity-40 hover:brightness-110 active:scale-95"
+              className="flex flex-1 min-h-[48px] items-center justify-center gap-2 rounded-full bg-cyan py-3 text-xs font-black uppercase tracking-widest text-black transition disabled:opacity-40 hover:brightness-110 active:scale-95 shadow-lg"
             >
-              <Check className="h-3.5 w-3.5" /> Confirmar
+              <Check className="h-4 w-4" /> Confirmar Cambio
             </button>
             <button
               onClick={() => setRescheduling(false)}
-              className="flex flex-1 min-h-[44px] items-center justify-center rounded-full border border-white/15 py-2 text-xs font-black uppercase tracking-widest text-white/55 transition hover:border-white/30 active:scale-95"
+              className="flex flex-1 min-h-[48px] items-center justify-center rounded-full border border-white/20 py-3 text-xs font-black uppercase tracking-widest text-white/60 transition hover:border-white/35 hover:text-white active:scale-95"
             >
               Cancelar
             </button>
@@ -525,26 +515,26 @@ function AppointmentCard({
 
       {/* ── Delete confirmation ── */}
       {confirmDelete && (
-        <div className="mt-3 space-y-3 rounded-[1.2rem] border border-red-500/30 bg-red-500/10 p-4">
+        <div className="mt-4 space-y-3.5 rounded-[1.4rem] border border-red-500/40 bg-gradient-to-br from-red-500/15 to-black/70 p-5 shadow-inner">
           <p className="text-sm font-black uppercase tracking-widest text-red-400">
             ¿Eliminar esta cita?
           </p>
-          <p className="text-xs text-white/45">
+          <p className="text-xs text-white/50">
             {apt.client_name} · {formatDateTime(apt.appointment_date)}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2.5 pt-1">
             <button
               onClick={() => {
                 onDelete(apt.id);
                 setConfirmDelete(false);
               }}
-              className="flex flex-1 min-h-[44px] items-center justify-center gap-1.5 rounded-full bg-red-500 py-2 text-xs font-black uppercase tracking-widest text-white transition hover:bg-red-600 active:scale-95"
+              className="flex flex-1 min-h-[48px] items-center justify-center gap-2 rounded-full bg-red-500 py-3 text-xs font-black uppercase tracking-widest text-white transition hover:bg-red-600 active:scale-95 shadow-lg"
             >
-              <Trash2 className="h-3.5 w-3.5" /> Sí, borrar
+              <Trash2 className="h-4 w-4" /> Sí, Borrar
             </button>
             <button
               onClick={() => setConfirmDelete(false)}
-              className="flex flex-1 min-h-[44px] items-center justify-center rounded-full border border-white/15 py-2 text-xs font-black uppercase tracking-widest text-white/55 transition hover:border-white/30 active:scale-95"
+              className="flex flex-1 min-h-[48px] items-center justify-center rounded-full border border-white/20 py-3 text-xs font-black uppercase tracking-widest text-white/60 transition hover:border-white/35 hover:text-white active:scale-95"
             >
               Cancelar
             </button>
@@ -568,11 +558,11 @@ export default function AgendaPage() {
   const [sound, setSound] = useState(true);
   const [loading, setLoading] = useState(false);
 
-  // Keep sound state accessible inside realtime callback without re-subscribing
+  // mantener el sonido accesible en la func de devolucion de tiempo real
   const soundRef = useRef(sound);
   soundRef.current = sound;
 
-  // ── Bootstrap: session check + persisted state ──────────
+  // ── Bootstrap: chequeo de sesion y estado de datos persistentes ──────────
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -595,7 +585,7 @@ export default function AgendaPage() {
     }
   }, []);
 
-  // ── Supabase: fetch + realtime subscription ──────────────
+  // ── Supabase: fetch + inicio en tiempo real ──────────────
   useEffect(() => {
     if (!unlocked || !supabase) return;
 
@@ -826,52 +816,55 @@ export default function AgendaPage() {
   return (
     <div className="min-h-screen bg-[#050505] text-white">
       {/* ── Sticky header ──────────────────────────────────── */}
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-black/80 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3">
+      <header className="sticky top-0 z-50 border-b border-white/10 bg-gradient-to-b from-black/90 to-black/80 backdrop-blur-2xl">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-4">
           {/* Left: back + branding */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Link
               href="/"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/55 transition hover:border-white/25 hover:text-white"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:border-white/30 hover:text-white hover:bg-white/10"
               aria-label="Inicio"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-5 w-5" />
             </Link>
             <div className="min-w-0">
-              <p className="truncate font-black text-sm uppercase tracking-[0.22em]">
+              <p className="truncate font-black text-base uppercase tracking-[0.26em]">
                 Barber Gang MX
               </p>
-              <p className="truncate text-[11px] capitalize text-white/35">
+              <p className="truncate text-xs capitalize text-white/45">
                 {todayInSpanish()}
               </p>
             </div>
           </div>
 
           {/* Right: live badge + controls */}
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="hidden sm:flex items-center gap-1.5 rounded-full border border-neon/30 bg-neon/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-neon">
-              <span className="h-1.5 w-1.5 rounded-full bg-neon animate-pulseGlow" />
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="hidden sm:flex items-center gap-2 rounded-full border border-neon/40 bg-neon/15 px-4 py-2 text-[11px] font-black uppercase tracking-widest text-neon shadow-neon/20">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-neon"></span>
+              </span>
               En vivo
             </span>
 
             <button
               onClick={toggleSound}
               title={sound ? "Silenciar" : "Activar sonido"}
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 transition hover:border-white/25"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 transition hover:border-white/30 hover:bg-white/10"
             >
               {sound ? (
-                <Volume2 className="h-4 w-4 text-neon" />
+                <Volume2 className="h-5 w-5 text-neon" />
               ) : (
-                <VolumeX className="h-4 w-4 text-white/35" />
+                <VolumeX className="h-5 w-5 text-white/40" />
               )}
             </button>
 
             <button
               onClick={logout}
               title="Cerrar sesión"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/55 transition hover:border-red-500/35 hover:text-red-400"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:border-red-500/40 hover:text-red-400 hover:bg-red-500/10"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-5 w-5" />
             </button>
           </div>
         </div>
@@ -904,43 +897,43 @@ export default function AgendaPage() {
         )}
 
         {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-3 gap-4">
           {/* Hoy */}
-          <div className="rounded-[1.4rem] border border-cyan/20 bg-cyan/5 p-4 text-center shadow-cyan">
-            <p className="text-3xl font-black text-cyan">{todayCount}</p>
-            <p className="mt-1 text-[10px] uppercase tracking-[0.32em] text-white/45">
-              Hoy
+          <div className="rounded-[1.6rem] border border-cyan/30 bg-gradient-to-br from-cyan/10 to-cyan/5 p-5 text-center shadow-cyan hover:shadow-xl transition-all">
+            <p className="text-4xl font-black text-cyan">{todayCount}</p>
+            <p className="mt-2 text-[11px] uppercase tracking-[0.34em] text-white/50">
+              Citas Hoy
             </p>
           </div>
           {/* Pendientes */}
-          <div className="rounded-[1.4rem] border border-yellow-400/20 bg-yellow-400/5 p-4 text-center">
-            <p className="text-3xl font-black text-yellow-300">
+          <div className="rounded-[1.6rem] border border-yellow-400/30 bg-gradient-to-br from-yellow-400/10 to-yellow-400/5 p-5 text-center hover:shadow-xl transition-all">
+            <p className="text-4xl font-black text-yellow-300">
               {pendingCount}
             </p>
-            <p className="mt-1 text-[10px] uppercase tracking-[0.32em] text-white/45">
+            <p className="mt-2 text-[11px] uppercase tracking-[0.34em] text-white/50">
               Pendientes
             </p>
           </div>
           {/* Confirmadas */}
-          <div className="rounded-[1.4rem] border border-neon/20 bg-neon/5 p-4 text-center shadow-neon">
-            <p className="text-3xl font-black text-neon">{confirmedCount}</p>
-            <p className="mt-1 text-[10px] uppercase tracking-[0.32em] text-white/45">
+          <div className="rounded-[1.6rem] border border-neon/30 bg-gradient-to-br from-neon/10 to-neon/5 p-5 text-center shadow-neon hover:shadow-xl transition-all">
+            <p className="text-4xl font-black text-neon">{confirmedCount}</p>
+            <p className="mt-2 text-[11px] uppercase tracking-[0.34em] text-white/50">
               Confirmadas
             </p>
           </div>
         </div>
 
         {/* Filter tabs */}
-        <div className="flex gap-2">
+        <div className="flex gap-3 p-1.5 bg-white/5 rounded-[1.4rem] border border-white/10">
           {FILTER_TABS.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => setFilter(key)}
               className={[
-                "flex-1 rounded-full py-2.5 text-xs font-black uppercase tracking-widest transition active:scale-95",
+                "flex-1 rounded-full py-3 text-xs font-black uppercase tracking-[0.26em] transition-all active:scale-95",
                 filter === key
-                  ? "bg-neon text-black"
-                  : "border border-white/15 bg-white/5 text-white/55 hover:border-white/25 hover:text-white",
+                  ? "bg-neon text-black shadow-neon/40"
+                  : "text-white/55 hover:text-white hover:bg-white/10",
               ].join(" ")}
             >
               {label}
