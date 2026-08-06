@@ -69,11 +69,10 @@ const FILTER_TABS: Array<{ key: Filter; label: string }> = [
 // Audio
 // ─────────────────────────────────────────────────────────
 
-function playDing() {
+function playDing(ctx: AudioContext | null) {
+  if (!ctx) return;
+
   try {
-    const ctx = new (
-      window.AudioContext || (window as any).webkitAudioContext
-    )();
     (
       [
         [0, 880],
@@ -147,13 +146,21 @@ function todayInSpanish(): string {
 // PIN Screen
 // ─────────────────────────────────────────────────────────
 
-function PinScreen({ onUnlock }: { onUnlock: () => void }) {
+function PinScreen({
+  onUnlock,
+  onInteract,
+}: {
+  onUnlock: () => void;
+  onInteract: () => void;
+}) {
   const [digits, setDigits] = useState<string[]>([]);
   const [shake, setShake] = useState(false);
 
   const handleKey = useCallback(
     (key: string) => {
       if (shake) return;
+
+      onInteract();
 
       if (key === "back") {
         setDigits((d) => d.slice(0, -1));
@@ -178,7 +185,7 @@ function PinScreen({ onUnlock }: { onUnlock: () => void }) {
         }
       }
     },
-    [digits, shake, onUnlock],
+    [digits, shake, onUnlock, onInteract],
   );
 
   const PAD_KEYS = [
@@ -473,46 +480,6 @@ function AppointmentCard({
         </div>
       )}
 
-      {/* ── Reschedule inline form ── */}
-      {rescheduling && (
-        <div className="mt-4 space-y-3.5 rounded-[1.4rem] border border-cyan/35 bg-gradient-to-br from-cyan/10 to-black/70 p-5 shadow-inner">
-          <p className="flex items-center gap-2.5 text-[11px] font-black uppercase tracking-[0.28em] text-cyan">
-            <RotateCcw className="h-4 w-4" /> Nueva Fecha y Hora
-          </p>
-          <input
-            type="date"
-            value={newDate}
-            min={new Date().toISOString().slice(0, 10)}
-            onChange={(e) => setNewDate(e.target.value)}
-            className="w-full rounded-[1rem] border border-white/15 bg-black/60 px-4 py-3.5 text-sm text-white outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition-all"
-          />
-          <input
-            type="time"
-            value={newTime}
-            onChange={(e) => setNewTime(e.target.value)}
-            className="w-full rounded-[1rem] border border-white/15 bg-black/60 px-4 py-3.5 text-sm text-white outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition-all"
-          />
-          <div className="flex gap-2.5 pt-1">
-            <button
-              disabled={!newDate || !newTime}
-              onClick={() => {
-                onReschedule(apt.id, newDate, newTime);
-                setRescheduling(false);
-              }}
-              className="flex flex-1 min-h-[48px] items-center justify-center gap-2 rounded-full bg-cyan py-3 text-xs font-black uppercase tracking-widest text-black transition disabled:opacity-40 hover:brightness-110 active:scale-95 shadow-lg"
-            >
-              <Check className="h-4 w-4" /> Confirmar Cambio
-            </button>
-            <button
-              onClick={() => setRescheduling(false)}
-              className="flex flex-1 min-h-[48px] items-center justify-center rounded-full border border-white/20 py-3 text-xs font-black uppercase tracking-widest text-white/60 transition hover:border-white/35 hover:text-white active:scale-95"
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* ── Delete confirmation ── */}
       {confirmDelete && (
         <div className="mt-4 space-y-3.5 rounded-[1.4rem] border border-red-500/40 bg-gradient-to-br from-red-500/15 to-black/70 p-5 shadow-inner">
@@ -557,10 +524,27 @@ export default function AgendaPage() {
   const [filter, setFilter] = useState<Filter>("today");
   const [sound, setSound] = useState(true);
   const [loading, setLoading] = useState(false);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   // mantener el sonido accesible en la func de devolucion de tiempo real
   const soundRef = useRef(sound);
   soundRef.current = sound;
+
+  const unlockAudio = useCallback(() => {
+    if (typeof window === "undefined") return;
+
+    const AudioContextCtor =
+      window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextCtor) return;
+
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioContextCtor();
+    }
+
+    if (audioContextRef.current.state === "suspended") {
+      void audioContextRef.current.resume();
+    }
+  }, []);
 
   // ── Bootstrap: chequeo de sesion y estado de datos persistentes ──────────
   useEffect(() => {
@@ -621,7 +605,13 @@ export default function AgendaPage() {
             const apt = payload.new as Appointment;
             // Skip if the barber deleted this appointment locally
             if (getDeletedIds().has(apt.id)) return;
-            if (soundRef.current) playDing();
+            if (soundRef.current) {
+              unlockAudio();
+              playDing(audioContextRef.current);
+              if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+                navigator.vibrate?.([120, 80, 160]);
+              }
+            }
 
             setAppointments((prev) => {
               const without = prev.filter((a) => a.id !== apt.id);
@@ -653,7 +643,7 @@ export default function AgendaPage() {
       active = false;
       client.removeChannel(channel);
     };
-  }, [unlocked]);
+  }, [unlocked, unlockAudio]);
 
   // ── Status helpers ───────────────────────────────────────
 
@@ -773,6 +763,7 @@ export default function AgendaPage() {
   const toggleSound = () => {
     const next = !sound;
     setSound(next);
+    unlockAudio();
     try {
       localStorage.setItem("bg_sound", next ? "1" : "0");
     } catch {
@@ -808,7 +799,7 @@ export default function AgendaPage() {
   // ── PIN gate ──────────────────────────────────────────────
 
   if (!unlocked) {
-    return <PinScreen onUnlock={() => setUnlocked(true)} />;
+    return <PinScreen onUnlock={() => { unlockAudio(); setUnlocked(true); }} onInteract={unlockAudio} />;
   }
 
   // ── Dashboard ─────────────────────────────────────────────

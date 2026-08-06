@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { services, barbers } from "@/data/site";
+import { services, barbers, businessInfo } from "@/data/site";
 import { supabase } from "@/lib/supabase";
 import {
   CheckCircle2,
@@ -216,7 +216,7 @@ export function BookingModal({
   const whatsappMessage = encodeURIComponent(
     `Hola! Acabo de agendar una cita en Barber Gang MX 💈\n\n📅 ${formattedDate}\n✂️ Servicio: ${savedForm.service}\n💈 Barber: ${savedForm.barber}\n👤 ${savedForm.client_name}\n📱 ${savedForm.client_phone}\n\nPor favor confirmar mi cita. ¡Gracias!`,
   );
-  const whatsappUrl = `https://wa.me/527821840309?text=${whatsappMessage}`;
+  const whatsappUrl = `https://wa.me/52${businessInfo.phone.replace(/\D/g, "")}?text=${whatsappMessage}`;
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 px-4 py-6 backdrop-blur-xl">
