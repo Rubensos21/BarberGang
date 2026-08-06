@@ -214,7 +214,7 @@ export function BookingModal({
       : "";
 
   const whatsappMessage = encodeURIComponent(
-    `Hola! Acabo de agendar una cita en Barber Gang MX 💈\n\n📅 ${formattedDate}\n✂️ Servicio: ${savedForm.service}\n💈 Barber: ${savedForm.barber}\n👤 ${savedForm.client_name}\n📱 ${savedForm.client_phone}\n\nPor favor confirmar mi cita. ¡Gracias!`,
+    `Hola! Acabo de agendar una cita en Barber Gang MX \n\n ${formattedDate}\n Servicio: ${savedForm.service}\n Barber: ${savedForm.barber}\n ${savedForm.client_name}\n ${savedForm.client_phone}\n\nPor favor confirmar mi cita. ¡Gracias!`,
   );
   const whatsappUrl = `https://wa.me/52${businessInfo.phone.replace(/\D/g, "")}?text=${whatsappMessage}`;
 
